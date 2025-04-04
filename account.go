@@ -8,63 +8,111 @@ var (
 	ErrWithdrawNegativeAmount = fmt.Errorf("cannot withdraw negative amount")
 	ErrDepositNegativeAmount  = fmt.Errorf("cannot deposit negative amount")
 	ErrInsufficientFunds      = fmt.Errorf("insufficient funds")
+	ErrInvalidOverdraftLimit  = fmt.Errorf("invalid overdraft limit")
+	ErrInvalidInterestRate    = fmt.Errorf("invalid interest rate")
 )
 
-type Account struct {
-	id      string
+type AccountID string
+
+type BankAccount interface {
+	Withdraw(amount float64) (BankAccount, error)
+	Deposit(amount float64) (BankAccount, error)
+	Balance() float64
+	String() string
+	ID() AccountID
+}
+
+type SavingsAccount interface {
+	BankAccount
+	InterestRate() float64
+}
+type CheckingAccount interface {
+	BankAccount
+	OverdraftLimit() float64
+}
+
+var _ SavingsAccount = &savingsAccount{}
+var _ CheckingAccount = &checkingAccount{}
+
+type bankAccount struct {
+	id      AccountID
 	balance float64
 }
 
-func NewAccount(id string, balance float64) Account {
-	return Account{id: id, balance: balance}
+type savingsAccount struct {
+	bankAccount
+	interestRate float64
 }
 
-func (a Account) WithdrawIM(amount float64) (Account, error) {
+type checkingAccount struct {
+	bankAccount
+	overdraftLimit float64
+}
+
+func NewBankAccount(id AccountID, balance float64) BankAccount {
+	return bankAccount{id: id, balance: balance}
+}
+
+func NewCheckingAccount(id AccountID, balance float64, overdraftLimit float64) (CheckingAccount, error) {
+	if overdraftLimit < 0 {
+		return nil, ErrInvalidOverdraftLimit
+	}
+	if balance < -overdraftLimit {
+		return nil, ErrInsufficientFunds
+	}
+	ba := bankAccount{id: id, balance: balance}
+	return checkingAccount{bankAccount: ba, overdraftLimit: overdraftLimit}, nil
+}
+
+func NewSavingAccount(id AccountID, balance float64, interestRate float64) (SavingsAccount, error) {
+	if interestRate < 0 {
+		return nil, ErrInvalidInterestRate
+	}
+	ba := bankAccount{id: id, balance: balance}
+	return savingsAccount{bankAccount: ba, interestRate: 0}, nil
+}
+
+func (a bankAccount) Withdraw(amount float64) (BankAccount, error) {
 	if amount < 0 {
 		return a, ErrWithdrawNegativeAmount
 	}
 	if amount > a.balance {
 		return a, ErrInsufficientFunds
 	}
-	return NewAccount(a.id, a.balance-amount), nil
+	return NewBankAccount(a.id, a.balance-amount), nil
 }
 
-func (a Account) DepositIM(amount float64) (Account, error) {
+func (a bankAccount) Deposit(amount float64) (BankAccount, error) {
 	if amount < 0 {
 		return a, ErrDepositNegativeAmount
 	}
-	return NewAccount(a.id, a.balance+amount), nil
+	return NewBankAccount(a.id, a.balance+amount), nil
 }
 
-func (a Account) Balance() float64 {
+func (a bankAccount) Balance() float64 {
 	return a.balance
 }
 
-func (a Account) String() string {
+func (a bankAccount) String() string {
 	return fmt.Sprintf("Account ID: %s, Balance: %.2f", a.id, a.balance)
 }
 
-func main() {
-	account := NewAccount("ABC-1", 1000.0)
-	fmt.Println(account)
-	account, _ = account.DepositIM(500.0)
-	fmt.Println(account)
-	account, _ = account.WithdrawIM(700.0)
-	fmt.Println(account)
-	fmt.Println("---")
+func (a bankAccount) ID() AccountID {
+	return a.id
+}
 
-	account2 := NewAccount("ABC-2", 2000.0)
-	account3 := NewAccount("ABC-3", 2000.0)
+// OverdraftLimit implements CheckingAccount.
+func (c checkingAccount) OverdraftLimit() float64 {
+	return c.overdraftLimit
+}
 
-	accounts := append([]Account{account, account2}, account3)
-	for _, acc := range accounts {
-		accountUpdated, _ := acc.DepositIM(100.0)
-		fmt.Println(accountUpdated)
-	}
+// Withdraw implements CheckingAccount.
+// Subtle: this method shadows the method (bankAccount).Withdraw of checkingAccount.bankAccount.
+func (c checkingAccount) Withdraw(amount float64) (BankAccount, error) {
+	return NewCheckingAccount(c.id, c.balance-amount, c.overdraftLimit)
+}
 
-	fmt.Println("---")
-	accounts = append([]Account{account, account2}, account3)
-	for _, acc := range accounts {
-		fmt.Println(acc)
-	}
+// InterestRate implements SavingsAccount.
+func (s savingsAccount) InterestRate() float64 {
+	return s.interestRate
 }

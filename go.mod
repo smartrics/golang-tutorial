@@ -1,3 +1,3 @@
-module github.com/smartrics/day1-bank-account
+module github.com/smartrics/golang-tutorial
 
 go 1.24.2
