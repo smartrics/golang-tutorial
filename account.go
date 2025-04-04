@@ -15,11 +15,11 @@ var (
 type AccountID string
 
 type BankAccount interface {
-	Withdraw(amount float64) (BankAccount, error)
-	Deposit(amount float64) (BankAccount, error)
-	Balance() float64
-	String() string
 	ID() AccountID
+	Balance() float64
+	Deposit(amount float64) (BankAccount, error)
+	Withdraw(amount float64) (BankAccount, error)
+	String() string
 }
 
 type SavingsAccount interface {

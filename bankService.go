@@ -2,10 +2,16 @@ package main
 
 import "fmt"
 
+var (
+	ErrInvalidAccount         = fmt.Errorf("invalid account")
+	ErrFromAccountWithdrawal  = fmt.Errorf("withdrawal failed from account")
+	ErrToAccountDeposit       = fmt.Errorf("deposit failed to account")
+	ErrSelfTransferDisallowed = fmt.Errorf("transfer from/to the same account is disallowed")
+)
+
 type BankService interface {
 	Transfer(fromAccount, toAccount BankAccount, amount float64, reference string) (BankAccount, BankAccount, error)
 	GetStatement(account BankAccount) ([]Transaction, error)
-	
 }
 
 type bankService struct {
@@ -29,13 +35,20 @@ func (b *bankService) addTransaction(accountID AccountID, transaction Transactio
 }
 
 func (b *bankService) Transfer(fromAccount, toAccount BankAccount, amount float64, reference string) (BankAccount, BankAccount, error) {
+	if toAccount == nil || fromAccount == nil {
+		return nil, nil, fmt.Errorf("%w: both accounts must be provided", ErrInvalidAccount)
+	}
+	if toAccount.ID() == fromAccount.ID() {
+		return nil, nil, fmt.Errorf("%w: cannot transfer to/from the same account", ErrSelfTransferDisallowed)
+	}
+
 	newFrom, err := fromAccount.Withdraw(amount)
 	if err != nil {
-		return nil, nil, fmt.Errorf("fromAccount: withdrawal failed: %w", err)
+		return nil, nil, fmt.Errorf("%v: %w", err, ErrFromAccountWithdrawal)
 	}
 	newTo, err := toAccount.Deposit(amount)
 	if err != nil {
-		return nil, nil, fmt.Errorf("toAccount: deposit failed: %w", err)
+		return nil, nil, fmt.Errorf("%v: %w", err, ErrToAccountDeposit)
 	}
 	t := *NewTransaction(
 		TransactionID(fmt.Sprintf("%s-%s", fromAccount.ID(), toAccount.ID())),
@@ -51,7 +64,7 @@ func (b *bankService) Transfer(fromAccount, toAccount BankAccount, amount float6
 
 func (b *bankService) GetStatement(account BankAccount) ([]Transaction, error) {
 	if account == nil {
-		return nil, fmt.Errorf("account is nil")
+		return nil, fmt.Errorf("%w: account must be provided", ErrInvalidAccount)
 	}
 	if b.transactions[account.ID()] == nil {
 		// not an error because new accounts may not have been used yet

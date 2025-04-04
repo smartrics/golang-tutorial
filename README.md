@@ -131,3 +131,50 @@ Use table-driven tests to test:
 |6| Copying structs| Shared slice/map state| Use deep copy or avoid direct copy|
 |7| Method set mismatch| Value receiver ≠ pointer receiver| Be consistent, prefer pointer receivers|
 |8| Unsafe zero-values| Accessing unset fields| Make types safe by default|
+
+## Part 3
+
+### 🎯 Goal
+
+ * Understand and use Go’s idiomatic error handling (error, `fmt.Errorf`, `errors.Is`/`As`)
+ * Write table-driven, benchmark, and mock-driven tests
+ * Use Go's built-in tooling: `go test`, `go vet`, `golangci-lint`, `go fmt`
+ * Improve code quality with static analysis
+ * Use custom errors to support richer business logic
+
+### 📋 Requirements
+
+#### ✅ Functional Requirements
+
+1. Extend your banking code to return and handle rich errors:
+ * Define custom error types (ErrInsufficientFunds, etc.)
+ * Use errors.Is() and errors.As() to match and extract
+ * Use fmt.Errorf(...%w...) for wrapping
+2. Add new unit tests for error flows:
+ * Insufficient funds
+ * Invalid input (negative amount)
+ * Self-transfer
+3. Convert unit tests to table-driven tests for readability and coverage 
+3. Add a benchmark test for Transfer() performance
+4. Introduce basic mocking:
+ * Use a fake/mock BankAccount for testing BankService
+ * use `moq` as mocking framework
+
+#### ⚙️ Tooling Requirements
+
+1. Format, vet, and lint your code:
+ * Use `go fmt`, `go vet`
+ * Use `golangci-lint` (optional)
+2. Add Makefile to automate testing, linting, and formatting
+3. Optionally: Add GitHub Actions to enforce tests/quality
+
+### ⚠️ Gotchas & Tips
+|Gotcha|Why It Matters|
+| ---  | --- |
+|`errors.New()` vs `fmt.Errorf(...%w...)`  |Use `fmt.Errorf` to wrap underlying causes                    |
+|Comparing `err.Error() strings`           |Fragile — prefer `errors.Is()` or `errors.As()`               |
+|Interface method returns `nil` typed value|Still non-nil interface! Use explicit `nil`                   |
+|Forgetting to run `go vet`                |It catches subtle bugs — always run it with tests             |
+|Linting ignored                           |`golangci-lint` catches bad practices beyond `go vet`         |
+|Benchmarks require naming convention      |Must start with `BenchmarkXxx` to run with `go test -bench`   |
+|Tests without assertions                  |Always compare expected values or use libraries like `testify`|
