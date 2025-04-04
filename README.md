@@ -90,7 +90,7 @@ You'll extend your previous immutable Account into:
  2. Define `SavingsAccount` and `CheckingAccount` :
   + Embed the base account struct
   + Add type-specific logic:
-    - `SavingsAccount`: add ApplyInterest(rate float64)
+    - `SavingsAccount`: support for an interest rate between 0 and 1 (inclusive) and add `ApplyInterest()`
     - `CheckingAccount`: support an overdraft limit
  3. Design these types as immutable: return new instances on state change
 
@@ -100,7 +100,6 @@ You'll extend your previous immutable Account into:
  * Implement the interface in both `SavingsAccount` and `CheckingAccount` (implicitly)
  * Define a `BankService` interface with:
    * `Transfer(from, to BankAccount, amount float64, reference string) (BankAccount, BankAccount, error)`
-
    * `GetStatement(acc BankAccount)`
 
 #### 🧪 Testing
@@ -110,7 +109,6 @@ Use table-driven tests to test:
  * Transfers via BankService
  * Verify code coverage
    * Run tests with `go test -v -coverprofile="coverage.out"`
-
    * Observe coverage with `go tool cover -html coverage.out`
 
 ### ⚙️ Non-Functional Requirements

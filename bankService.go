@@ -5,6 +5,7 @@ import "fmt"
 type BankService interface {
 	Transfer(fromAccount, toAccount BankAccount, amount float64, reference string) (BankAccount, BankAccount, error)
 	GetStatement(account BankAccount) ([]Transaction, error)
+	
 }
 
 type bankService struct {

@@ -132,3 +132,21 @@ func TestNewCheckingAccountInvalidOverdraftLimit(t *testing.T) {
 		t.Errorf("Expected error 'invalid overdraft limit', got '%v'", err)
 	}
 }
+
+func TestNewSavingAccountWithInterests(t *testing.T) {
+	sa, err := NewSavingAccount("ABC-1", 1000.0, 0.05)
+	if err != nil {
+		t.Errorf("Expected no error, got '%v'", err)
+	}
+	if sa.InterestRate() != 0.05 {
+		t.Errorf("Expected interest rate 0.05, got '%.2f'", sa.InterestRate())
+	}
+}
+
+func TestSavingAccountApplyInterest(t *testing.T) {
+	sa, _ := NewSavingAccount("ABC-1", 1000.0, 0.05)
+	sa = sa.ApplyInterest()
+	if sa.Balance() != 1050.0 {
+		t.Errorf("Expected account balance 1050.0, got '%.2f'", sa.Balance())
+	}
+}

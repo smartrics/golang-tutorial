@@ -25,6 +25,7 @@ type BankAccount interface {
 type SavingsAccount interface {
 	BankAccount
 	InterestRate() float64
+	ApplyInterest() SavingsAccount
 }
 type CheckingAccount interface {
 	BankAccount
@@ -65,11 +66,12 @@ func NewCheckingAccount(id AccountID, balance float64, overdraftLimit float64) (
 }
 
 func NewSavingAccount(id AccountID, balance float64, interestRate float64) (SavingsAccount, error) {
-	if interestRate < 0 {
+	if interestRate < 0 || interestRate > 1 {
+		// Interest rate should be between 0 and 1 (0% to 100%)
 		return nil, ErrInvalidInterestRate
 	}
 	ba := bankAccount{id: id, balance: balance}
-	return savingsAccount{bankAccount: ba, interestRate: 0}, nil
+	return savingsAccount{bankAccount: ba, interestRate: interestRate}, nil
 }
 
 func (a bankAccount) Withdraw(amount float64) (BankAccount, error) {
@@ -115,4 +117,10 @@ func (c checkingAccount) Withdraw(amount float64) (BankAccount, error) {
 // InterestRate implements SavingsAccount.
 func (s savingsAccount) InterestRate() float64 {
 	return s.interestRate
+}
+
+func (s savingsAccount) ApplyInterest() SavingsAccount {
+	newBalance := s.balance + (s.balance * s.interestRate)
+	nsa, _ := NewSavingAccount(s.id, newBalance, s.interestRate)
+	return nsa
 }
