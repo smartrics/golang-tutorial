@@ -14,7 +14,7 @@ go mod init github.com/smartrics/golang-tutorial
 
 *Note*: Use your own module name for the project.
 
-## Part 1
+## Part 1: Syntax & Language Fundamentals
 
 ### 🎯 Goal:
 
@@ -54,7 +54,7 @@ go mod init github.com/smartrics/golang-tutorial
 | 7  | Lowercase fields            | Not exported outside package                             |
 | 8  | Zero values work            | e.g. `Account{}` is safe unless you enforce constructors |
 
-## Part 2
+## Part 2: Structs, Methods, Interfaces
 
 ### 🎯 Objective
 
@@ -132,7 +132,7 @@ Use table-driven tests to test:
 |7| Method set mismatch| Value receiver ≠ pointer receiver| Be consistent, prefer pointer receivers|
 |8| Unsafe zero-values| Accessing unset fields| Make types safe by default|
 
-## Part 3
+## Part 3: Error Handling, Testing, Tooling
 
 ### 🎯 Goal
 
@@ -178,3 +178,61 @@ Use table-driven tests to test:
 |Linting ignored                           |`golangci-lint` catches bad practices beyond `go vet`         |
 |Benchmarks require naming convention      |Must start with `BenchmarkXxx` to run with `go test -bench`   |
 |Tests without assertions                  |Always compare expected values or use libraries like `testify`|
+
+## Part 4: Application Structure, Project Organisation, and CI/CD Readiness
+
+### 🎯 Goal
+
+ * Organise your project using idiomatic Go layout (cmd/, pkg/, internal/, etc.)
+ * Split domain, service, and transport logic
+ * Configure a simple CI workflow (GitHub Actions or local runner)
+ * Integrate formatting, vetting, linting, and test automation
+ * Write integration-style tests that simulate end-to-end usage
+
+### 📋 Requirements
+
+#### ✅ Functional Requirements
+
+Project layout should support:
+ * Clean separation between domain logic and orchestration
+ * A `cmd/` folder with a real `main.go` entry point
+ * A `pkg/` or `internal/` directory for reusable business code
+ * Easy import for mocks and unit tests
+
+Make application testable:
+ * Interfaces for external dependencies
+ * All domain logic isolated in pure functions or services
+ * Setup logic (e.g., `NewBankService`) extracted into `factory.go` or `main.go`
+
+Testing:
+ * All existing table-driven + benchmark tests still work
+ * Add at least one integration test: simulate a full transfer + statement fetch
+
+CI/CD Readiness:
+ * Linting with `golangci-lint`
+ * Testing with `go test ./...`
+ * Format check with `go fmt` or `gofmt -l`
+ * Optional: GitHub Actions config (`.github/workflows/ci.yml`)
+
+#### 🧰 Tooling
+|Tool|Purpose|
+| ---                         | ---                     |
+|`go test ./...`              | Run all tests           |
+|`go test -bench=. -benchmem` | Run benchmarks          |
+|`go vet ./...`               | Static analysis         |
+|`gofmt`, `go fmt ./...`      | Code formatting         |
+|`golangci-lint`              | Aggregated linter       |
+|`make` / `build.ps1`         | Automate commands       |
+|GitHub Actions               | Run checks on push/PR   |
+|`moq`                        | Generate interface mocks|
+
+### ⚠️ Gotchas
+|# |Gotcha|Tip|
+|---|---|---|
+|1 | Mixing domain and I/O logic | Split handlers/controllers from services and models|
+|2 | No dependency boundaries    | Use interfaces for services and ports/adapters for I/O|
+|3 | Everything in `main.go`     | Move wiring logic to `cmd/` or internal/ packages|
+|4 | CI flaky or missing         | Use local make test before relying on GitHub CI|
+|5 | Test files in wrong folders | Put integration tests in `/test/`, not `/pkg/`|
+|6 | Skipping `go vet`           | Always run vet in CI — catches actual bugs|
+|7 | gofmt vs `go fmt` confusion | `go fmt` is a wrapper for `gofmt`; use `go fmt ./...` for simplicity|

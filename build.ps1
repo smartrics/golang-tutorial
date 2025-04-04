@@ -5,7 +5,7 @@ param (
 )
 
 function Test {
-    go test -v ./...
+    go test -v ./tests/...
 }
 
 function Lint {
@@ -21,7 +21,11 @@ function Fmt {
 }
 
 function Bench {
-    go test -bench=. ./...
+    go test -bench=. ./tests/...
+}
+
+function Mock {
+    moq -out .\mocks\bank\bank_account_moq.go -pkg bank_mocks internal\bank BankAccount 
 }
 
 switch ($Task) {
@@ -30,10 +34,13 @@ switch ($Task) {
     "vet"  { Vet }
     "fmt"  { Fmt }
     "bench" { Bench }
+    "mock" { Mock }
     "all" {
+        Mock
         Test
         Vet
         Lint
+        Fmt
     }
     default { Write-Output "Unknown task: $Task" }
 }
