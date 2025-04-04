@@ -1,6 +1,10 @@
 package main
 
-import "github.com/smartrics/golang-tutorial/internal/bank"
+import (
+	"fmt"
+
+	"github.com/smartrics/golang-tutorial/internal/bank"
+)
 
 func main() {
 	// Create a new transaction
@@ -10,6 +14,6 @@ func main() {
 	println("Transaction ID:", tx.ID())
 	println("From:", tx.From())
 	println("To:", tx.To())
-	println("Amount:", tx.Amount())
+	println(fmt.Sprintf("Amount: %0.2f", tx.Amount()))
 	println("Reference:", tx.Reference())
 }
