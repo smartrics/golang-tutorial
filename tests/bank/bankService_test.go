@@ -136,3 +136,16 @@ func TestBankService_GetStatement(t *testing.T) {
 		}
 	})
 }
+
+func TestAccountWithCounterTracksTransactions(t *testing.T) {
+	base := bank.NewBankAccount("C1", 1000)
+	acc := bank.NewAccountWithCounter(base)
+
+	acc1, _ := acc.Deposit(100)
+	acc2, _ := acc1.Withdraw(50)
+
+	withCount := acc2.(*bank.AccountWithCounter)
+	if withCount.Count() != 2 {
+		t.Errorf("expected 2 transactions, got %d", withCount.Count())
+	}
+}
