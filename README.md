@@ -236,3 +236,63 @@ CI/CD Readiness:
 |5 | Test files in wrong folders | Put integration tests in `/test/`, not `/pkg/`|
 |6 | Skipping `go vet`           | Always run vet in CI — catches actual bugs|
 |7 | gofmt vs `go fmt` confusion | `go fmt` is a wrapper for `gofmt`; use `go fmt ./...` for simplicity|
+
+## Part 5: Functional Composition, OO Patterns, and Advanced Struct Techniques
+
+### 🎯 Goal
+
+ * Apply object-oriented composition idiomatically in Go (struct embedding, interfaces)
+ * Use functional programming techniques like function literals, decorators, and pipelines
+ * Understand and apply mixins via composition and embedding
+ * Build and test reusable behaviours (e.g., logging, metrics, validation wrappers)
+ * Maintain immutability and testability in composable patterns
+
+### 📋 Requirements
+
+#### ✅ Object-Oriented Composition (Go idioms)
+
+ * Use interface composition to split behaviors (Withdrawer, Depositor, Statementable)
+ * Use struct embedding to reuse logic between different account types
+ * Implement a mixin-style helper (e.g., to track audit logs, transaction counts)
+ * Enable method override via embedding shadowing
+
+#### ✅ Functional Composition
+
+ * Write a transfer pipeline using decorator functions:
+   * e.g., `withLogging`, `withValidation`, `withAuditing`
+ * Demonstrate functional chaining or middleware-style layering:
+   * `transfer := withLogging(withValidation(realTransfer))`
+ * Write pure functions for operations like `ApplyInterest`, `FeeDeduction`
+
+#### ✅ Advanced Techniques
+ * Demonstrate composition vs inheritance clearly
+ * Use interfaces + embedding to achieve reusable but isolated logic
+ * Avoid reflect and generics unless absolutely needed
+ * Structure composable business logic like policy evaluation chains or validators
+
+### ⚠️ Gotchas
+| # | Gotcha|Tip|
+|---|---|---|
+|1|Expecting inheritance|Go uses composition (struct embedding, interfaces) instead|
+|2|Embedding = polymorphism|Embedding provides reuse, but not virtual dispatch|
+|3|Function types aren't interfaces|Decorators need to match the signature exactly|
+|4|Over reliance on global state|Keep functional wrappers pure where possible|
+|5|Testing embedded behavior|Write tests for the outer type, not just the inner struct|
+|6|Overly rigid interface hierarchies|Compose interfaces from minimal responsibilities|
+|7|Confusing struct method sets|Remember: value vs pointer receivers matter in composition|
+
+
+### 🧰 Tools and Concepts
+|Concept|Why It Matters|
+|Struct embedding|Simulates mixins / method reuse|
+|Functional wrapping|Enables cross-cutting concerns (log, auth, audit)|
+|Small interfaces|Increases testability and reusability|
+|Closures|Maintain internal state (e.g., counters, contexts)|
+|Middleware chaining|Enables business logic orchestration|
+|Immutability + composition|Safer for concurrency and testing|
+
+### 🧪 What You’ll End Up With
+ * Multiple account types sharing common logic, but with different behaviour
+ * Decorators for logging, validation, and error wrapping
+ * A composable Transfer pipeline (like functional middleware)
+ * A clearly isolated, testable, modular service design
