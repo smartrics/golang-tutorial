@@ -5,8 +5,9 @@ import (
 )
 
 var (
-	ErrWithdrawNegativeAmount = fmt.Errorf("cannot withdraw negative amount")
-	ErrDepositNegativeAmount  = fmt.Errorf("cannot deposit negative amount")
+	ErrNegativeAmount         = fmt.Errorf("amount must be >= 0")
+	ErrWithdrawNegativeAmount = fmt.Errorf("%w: cannot withdraw", ErrNegativeAmount)
+	ErrDepositNegativeAmount  = fmt.Errorf("%w: cannot deposit", ErrNegativeAmount)
 	ErrInsufficientFunds      = fmt.Errorf("insufficient funds")
 	ErrInvalidOverdraftLimit  = fmt.Errorf("invalid overdraft limit")
 	ErrInvalidInterestRate    = fmt.Errorf("invalid interest rate")
