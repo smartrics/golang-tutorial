@@ -115,3 +115,86 @@ func TestWithLoggingSuccess(t *testing.T) {
 		t.Errorf("expected logs to contain start and success, got:\n%s", logs)
 	}
 }
+
+func TestTransferFunc_PipelineExecution_Success(t *testing.T) {
+	service := bank.NewBankService()
+
+	var audit []bank.AuditEntry
+
+	auditFn := func(auditEntry bank.AuditEntry) {
+		audit = append(audit, auditEntry)
+	}
+
+	transfer := bank.WithLogging(
+		bank.WithAudit(auditFn)(
+			bank.CoreTransfer(service),
+		),
+	)
+
+	from := bank.NewBankAccount("FROM", 1000)
+	to := bank.NewBankAccount("TO", 500)
+
+	newFrom, newTo, err := transfer(from, to, 250, "INV-999")
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	// Validate balances
+	if newFrom.Balance() != 750 {
+		t.Errorf("expected newFrom balance 750, got %.2f", newFrom.Balance())
+	}
+	if newTo.Balance() != 750 {
+		t.Errorf("expected newTo balance 750, got %.2f", newTo.Balance())
+	}
+
+	// Validate audit log
+	if len(audit) != 1 {
+		t.Fatalf("expected 1 audit entry, got %d", len(audit))
+	}
+	entry := audit[0]
+	if !entry.Success || entry.Reference != "INV-999" {
+		t.Errorf("unexpected audit entry: %+v", entry)
+	}
+
+	// Validate transaction was recorded
+	stmtFrom, _ := service.GetStatement(newFrom)
+	stmtTo, _ := service.GetStatement(newTo)
+
+	if len(stmtFrom) == 0 || len(stmtTo) == 0 {
+		t.Error("expected statements to include transaction")
+	}
+
+}
+
+func TestTransferFunc_PipelineExecution_Failure(t *testing.T) {
+	service := bank.NewBankService()
+
+	var audit []bank.AuditEntry
+
+	auditFn := func(auditEntry bank.AuditEntry) {
+		audit = append(audit, auditEntry)
+	}
+
+	transfer := bank.WithAudit(auditFn)(
+		bank.CoreTransfer(service),
+	)
+
+	from := bank.NewBankAccount("A1", 50)
+	to := bank.NewBankAccount("A2", 0)
+
+	_, _, err := transfer(from, to, 100, "failRef")
+
+	if err == nil {
+		t.Fatalf("expected an error")
+	}
+
+	// Validate audit log
+	if len(audit) != 1 {
+		t.Fatalf("expected 1 audit entry, got %d", len(audit))
+	}
+	entry := audit[0]
+	if entry.Success || entry.Reference != "failRef" {
+		t.Errorf("unexpected audit entry: %+v", entry)
+	}
+
+}
