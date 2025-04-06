@@ -10,6 +10,15 @@ var (
 	ErrNilAccount = fmt.Errorf("%w: from and to accounts must not be nil", ErrInvalidAccount)
 )
 
+type AuditEntry struct {
+	FromID    AccountID
+	ToID      AccountID
+	Amount    float64
+	Reference string
+	Success   bool
+	Error     error
+}
+
 type TransferFunc func(from, to BankAccount, amount float64, reference string) (BankAccount, BankAccount, error)
 
 func CoreTransfer(service BankService) TransferFunc {
@@ -36,7 +45,7 @@ func WithValidation(next TransferFunc) TransferFunc {
 func WithLogging(next TransferFunc) TransferFunc {
 	return func(from, to BankAccount, amount float64, reference string) (BankAccount, BankAccount, error) {
 		start := time.Now()
-		log.Printf("[TRANSFER] initiating from: `%s`, to: `%s`, amount: `%.2f`, ref=`%s`", from.ID(), to.ID(), amount, reference)
+		log.Printf("[TRANSFER] Initiating from: `%s`, to: `%s`, amount: `%.2f`, ref=`%s`", from.ID(), to.ID(), amount, reference)
 		newFrom, newTo, err := next(from, to, amount, reference)
 		if err != nil {
 			log.Printf("[TRANSFER] FAILED after %s: %v", time.Since(start), err)
@@ -45,5 +54,26 @@ func WithLogging(next TransferFunc) TransferFunc {
 
 		log.Printf("[TRANSFER] SUCCESS after %s: newFromBalance=%.2f newToBalance=%.2f", time.Since(start), newFrom.Balance(), newTo.Balance())
 		return newFrom, newTo, nil
+	}
+}
+
+func WithAudit(auditFn func(AuditEntry)) func(TransferFunc) TransferFunc {
+	return func(next TransferFunc) TransferFunc {
+		return func(from, to BankAccount, amount float64, reference string) (BankAccount, BankAccount, error) {
+			newFrom, newTo, err := next(from, to, amount, reference)
+
+			entry := AuditEntry{
+				FromID:    from.ID(),
+				ToID:      to.ID(),
+				Amount:    amount,
+				Reference: reference,
+				Success:   err == nil,
+				Error:     err,
+			}
+
+			auditFn(entry)
+
+			return newFrom, newTo, err
+		}
 	}
 }
