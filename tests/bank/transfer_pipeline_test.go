@@ -198,3 +198,62 @@ func TestTransferFunc_PipelineExecution_Failure(t *testing.T) {
 	}
 
 }
+
+func TestPipeline_WithAccountWithCounter(t *testing.T) {
+	service := bank.NewBankService()
+
+	var audit []bank.AuditEntry
+	auditFn := func(e bank.AuditEntry) {
+		audit = append(audit, e)
+	}
+
+	transfer := bank.WithLogging(
+		bank.WithValidation(
+			bank.WithAudit(auditFn)(
+				bank.CoreTransfer(service),
+			),
+		),
+	)
+
+	baseFrom := bank.NewBankAccount("FROM", 1000)
+	baseTo := bank.NewBankAccount("TO", 500)
+
+	from := bank.NewAccountWithCounter(baseFrom)
+	to := bank.NewAccountWithCounter(baseTo)
+
+	resFrom, resTo, err := transfer(from, to, 200, "DEMO-100")
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	// Type assert back to AccountWithCounter to inspect counters
+	fromWithCount, ok := resFrom.(*bank.AccountWithCounter)
+	if !ok {
+		t.Fatalf("expected AccountWithCounter, got %T", resFrom)
+	}
+	toWithCount, ok := resTo.(*bank.AccountWithCounter)
+	if !ok {
+		t.Fatalf("expected AccountWithCounter, got %T", resTo)
+	}
+
+	if fromWithCount.Count() != 1 {
+		t.Errorf("expected from count 1, got %d", fromWithCount.Count())
+	}
+	if toWithCount.Count() != 1 {
+		t.Errorf("expected to count 1, got %d", toWithCount.Count())
+	}
+
+	// Bonus: assert balance updated correctly
+	if fromWithCount.Balance() != 800 || toWithCount.Balance() != 700 {
+		t.Errorf("unexpected balances: from=%.2f, to=%.2f", fromWithCount.Balance(), toWithCount.Balance())
+	}
+
+	// Bonus: audit and statement check
+	if len(audit) != 1 {
+		t.Errorf("expected 1 audit entry, got %d", len(audit))
+	}
+	stmt, _ := service.GetStatement(fromWithCount)
+	if len(stmt) == 0 {
+		t.Errorf("expected statement for from account")
+	}
+}
