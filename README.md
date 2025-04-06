@@ -274,7 +274,7 @@ CI/CD Readiness:
 | # | Gotcha|Tip|
 |---|---|---|
 |1|Expecting inheritance|Go uses composition (struct embedding, interfaces) instead|
-|2|Embedding = polymorphism|Embedding provides reuse, but not virtual dispatch|
+|2|Embedding != polymorphism|Embedding provides reuse, but not virtual dispatch|
 |3|Function types aren't interfaces|Decorators need to match the signature exactly|
 |4|Over reliance on global state|Keep functional wrappers pure where possible|
 |5|Testing embedded behavior|Write tests for the outer type, not just the inner struct|
