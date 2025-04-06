@@ -256,4 +256,8 @@ func TestPipeline_WithAccountWithCounter(t *testing.T) {
 	if len(stmt) == 0 {
 		t.Errorf("expected statement for from account")
 	}
+	stmt, _ = service.GetStatement(toWithCount)
+	if len(stmt) == 0 {
+		t.Errorf("expected statement for to account")
+	}
 }
