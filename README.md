@@ -85,13 +85,13 @@ You'll extend your previous immutable Account into:
 #### 📦 Types and Structs
 
  1. Define a common base account struct for shared logic:
-  + Internal fields: id, balance
-  + Expose via `Balance()` and `ID()`
+    + Internal fields: id, balance
+    + Expose via `Balance()` and `ID()`
  2. Define `SavingsAccount` and `CheckingAccount` :
-  + Embed the base account struct
-  + Add type-specific logic:
-    - `SavingsAccount`: support for an interest rate between 0 and 1 (inclusive) and add `ApplyInterest()`
-    - `CheckingAccount`: support an overdraft limit
+    + Embed the base account struct
+    + Add type-specific logic:
+      - `SavingsAccount`: support for an interest rate between 0 and 1 (inclusive) and add `ApplyInterest()`
+      - `CheckingAccount`: support an overdraft limit
  3. Design these types as immutable: return new instances on state change
 
 #### 🧠 Behaviour & Interfaces
@@ -147,24 +147,24 @@ Use table-driven tests to test:
 #### ✅ Functional Requirements
 
 1. Extend your banking code to return and handle rich errors:
- * Define custom error types (ErrInsufficientFunds, etc.)
- * Use errors.Is() and errors.As() to match and extract
- * Use fmt.Errorf(...%w...) for wrapping
+   * Define custom error types (ErrInsufficientFunds, etc.)
+   * Use errors.Is() and errors.As() to match and extract
+   * Use fmt.Errorf(...%w...) for wrapping
 2. Add new unit tests for error flows:
- * Insufficient funds
- * Invalid input (negative amount)
- * Self-transfer
+   * Insufficient funds
+   * Invalid input (negative amount)
+   * Self-transfer
 3. Convert unit tests to table-driven tests for readability and coverage 
 3. Add a benchmark test for Transfer() performance
 4. Introduce basic mocking:
- * Use a fake/mock BankAccount for testing BankService
- * use `moq` as mocking framework
+   * Use a fake/mock BankAccount for testing BankService
+   * use `moq` as mocking framework
 
 #### ⚙️ Tooling Requirements
 
 1. Format, vet, and lint your code:
- * Use `go fmt`, `go vet`
- * Use `golangci-lint` (optional)
+   * Use `go fmt`, `go vet`
+   * Use `golangci-lint` (optional)
 2. Add Makefile to automate testing, linting, and formatting
 3. Optionally: Add GitHub Actions to enforce tests/quality
 
@@ -297,7 +297,7 @@ CI/CD Readiness:
  * A composable Transfer pipeline (like functional middleware)
  * A clearly isolated, testable, modular service design
 
- ## Part 6: Concurrency, Channels and Project Architecture
+## Part 6: Concurrency, Channels and Project Architecture
 
 ### 🎯 Goal
 
@@ -321,7 +321,6 @@ Establish a resilient and maintainable application architecture, with:
 
 ### 📋 Requirements
  1. Concurrency Fundamentals
- 
     * Use goroutines to execute transfer operations concurrently
     * Use channels to coordinate:
       * Event dispatch
@@ -330,7 +329,6 @@ Establish a resilient and maintainable application architecture, with:
     * Use `context.Context` for timeout and cancellation propagation
 
  2. Concurrency Patterns
- 
     * Implement and test:
       * Fan-out: Splitting a stream of tasks to N workers
       * Fan-in: Aggregating results from multiple sources
@@ -371,3 +369,56 @@ internal/bank/
 │   ├── processor.go       # concurrent transfer processor
 │   └── ...
 ```
+## Part 7: Interface Composition, APIs, and I/O Integration
+
+### 🎯 Goal
+
+ * Defining clear, decoupled interfaces
+ * Designing a public API for your banking processor
+ * Handling I/O and interaction boundaries like HTTP, CLI, or gRPC
+ * Testing integrations using mock services and dependency injection
+
+### ✅ Requirements
+
+1. Design an API-friendly Interface
+    * Think of an external caller that wants to:
+    * Submit a transfer
+    * Get account statements
+    * Possibly subscribe to events or results
+    * Design the TransferEngine interface that wraps your processor like:
+        ```go
+        type TransferEngine interface {
+          SubmitTransfer(fromID, toID string, amount float64, ref string) error
+          GetStatement(accountID string) ([]bank.Transaction, error)
+        }
+        ```
+      to:
+        * Encapsulates your internal types
+        * Easy to expose via HTTP or CLI
+        * Hides processor and account structs behind strings
+
+2. Account Registry
+    * Map from accountID string → BankAccount object
+    * Handle unknown accounts
+    * Return proper errors if not found
+
+3. Hook Up I/O Boundary (e.g. HTTP Handler or CLI)
+    * Accept a JSON payload or CLI command
+    * Decode it
+    * Call `TransferEngine.SubmitTransfer(...)`
+
+4. Support Observability
+    * Log when transfers are submitted
+    * Optionally, expose results or errors via a callback or audit
+
+5. Write Integration Tests
+    * Submit a transfer through the API
+    * Assert the account balances and statements
+
+### ⚠️ Gotchas to Watch For
+| # |Area|Gotcha|
+| --- | --- | --- |
+| 1 |Account lookups|Don't panic on unknown ID|
+| 2 |API layer|Avoid leaking internal types like BankAccount|
+| 3 |Tests|Don't forget to test error paths (missing account, bad amount)|
+| 4 |Concurrency|Account registry access must be thread-safe if shared|
