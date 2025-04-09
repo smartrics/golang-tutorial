@@ -76,7 +76,10 @@ func TestProcessor_ConcurrentJobs(t *testing.T) {
 
 	service := async.NewConcurrentBankService()
 	var audit []bank.AuditEntry
+	auditMu := sync.Mutex{}
 	auditFn := func(e bank.AuditEntry) {
+		auditMu.Lock()
+		defer auditMu.Unlock()
 		audit = append(audit, e)
 	}
 
