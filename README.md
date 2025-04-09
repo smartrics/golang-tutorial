@@ -405,6 +405,26 @@ internal/bank/
     * Accept a JSON payload or CLI command
     * Decode it
     * Call `TransferEngine.SubmitTransfer(...)`
+    * HTTP API:
+      * Register account: 
+      ```
+        curl -X POST http://localhost:8080/accounts -d "{\"id\":\"cliuser\", \"balance\":999}" -H "Content-Type: application/json"
+      ```
+      * Get Statement: 
+        ```
+        curl http://localhost:8080/statement/cliuser`
+        ```
+      * Make Transfer: 
+        ```
+        curl -X POST http://localhost:8080/transfer \
+          -H "Content-Type: application/json" \
+          -d '{
+            "from_id": "cliuser1",
+            "to_id": "cliuser2",
+            "amount": 500,
+            "reference": "cli transfer"
+        }'
+        ```
 
 4. Support Observability
     * Log when transfers are submitted

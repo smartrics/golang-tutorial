@@ -15,6 +15,7 @@ var (
 type AccountRegistry interface {
 	Get(id string) (bank.BankAccount, error)
 	Register(bank.BankAccount)
+	List() []bank.BankAccount
 }
 
 type accountRegistry struct {
@@ -44,4 +45,15 @@ func (r *accountRegistry) Get(id string) (bank.BankAccount, error) {
 		return nil, ErrUnknownAccount
 	}
 	return acc, nil
+}
+
+func (r *accountRegistry) List() []bank.BankAccount {
+	r.mu.RLock()
+	defer r.mu.RUnlock()
+
+	out := make([]bank.BankAccount, 0, len(r.accounts))
+	for _, acc := range r.accounts {
+		out = append(out, acc)
+	}
+	return out
 }
