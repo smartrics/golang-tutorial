@@ -2,10 +2,18 @@ package async
 
 import (
 	"context"
+	"errors"
 	"fmt"
+	"math/rand"
 	"sync"
+	"time"
 
 	"github.com/smartrics/golang-tutorial/internal/bank"
+)
+
+var (
+	ErrProcessorStopped = fmt.Errorf("processor stopped")
+	ErrJobQueueFull     = fmt.Errorf("job queue full")
 )
 
 // TransferJob represents a single banking transfer task.
@@ -29,9 +37,11 @@ type TransferJob struct {
 // It can be started and stopped gracefully and accepts incoming transfer jobs
 // via Submit(). The processor runs a configurable number of worker goroutines
 // that pull jobs from a channel and execute them using a TransferFunc pipeline.
+// SubmitWithRetry() adds a configurable backpressure for the client to handle.
 type Processor interface {
 	Start(ctx context.Context) error
 	Submit(job TransferJob) error
+	SubmitWithRetry(job TransferJob, maxAttempts int, delay time.Duration) error
 	Stop() error
 }
 
@@ -47,6 +57,12 @@ type asyncProcessor struct {
 	wg       sync.WaitGroup    // Tracks live workers for graceful shutdown
 	stopOnce sync.Once         // Ensures Stop() is only called once
 	stopCh   chan struct{}     // Signals workers to shut down
+}
+
+// randomJitter calculates a random number between min and max used to prevent submission storms
+func randomJitter(min, max time.Duration) time.Duration {
+	delta := max - min
+	return min + time.Duration(rand.Int63n(int64(delta)))
 }
 
 // NewProcessor creates a new asynchronous processor with the given pipeline and number of workers.
@@ -105,15 +121,43 @@ func (p *asyncProcessor) Stop() error {
 func (p *asyncProcessor) Submit(job TransferJob) error {
 	select {
 	case <-p.stopCh:
-		return fmt.Errorf("processor stopped")
+		return ErrProcessorStopped
 	default:
 		select {
 		case p.jobs <- job:
 			return nil
 		default:
-			return fmt.Errorf("job queue full")
+			return ErrJobQueueFull
 		}
 	}
+}
+
+// SubmitWithRetry tries to submit the job multiple times with a delay between attempts.
+// It returns an error if the job cannot be submitted after maxAttempts.
+func (p *asyncProcessor) SubmitWithRetry(job TransferJob, maxAttempts int, baseDelay time.Duration) error {
+	var lastErr error
+
+	for attempt := 1; attempt <= maxAttempts; attempt++ {
+		err := p.Submit(job)
+		if err == nil {
+			return nil // success
+		}
+
+		lastErr = err
+
+		// If processor stopped, bail immediately
+		if errors.Is(err, ErrProcessorStopped) {
+			return err
+		}
+
+		jittered := randomJitter(
+			time.Duration(float64(baseDelay)*0.8),
+			time.Duration(float64(baseDelay)*1.2),
+		)
+		time.Sleep(jittered)
+	}
+
+	return fmt.Errorf("failed to submit job after %d attempts: %w", maxAttempts, lastErr)
 }
 
 // process executes a single TransferJob using the configured pipeline.
