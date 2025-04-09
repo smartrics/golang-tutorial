@@ -17,7 +17,8 @@ type TransferJob struct {
 	To        bank.BankAccount
 	Amount    float64
 	Reference string
-	Done      chan error // or callback
+	Done      chan error
+	Ctx       context.Context
 }
 
 type Processor interface {
@@ -91,6 +92,23 @@ func (p *asyncProcessor) Submit(job TransferJob) error {
 }
 
 func (p *asyncProcessor) process(job TransferJob) error {
-	_, _, err := p.pipeline(job.From, job.To, job.Amount, job.Reference)
-	return err
+	ctx := job.Ctx
+	if ctx == nil {
+		ctx = context.Background()
+	}
+
+	done := make(chan struct{})
+	var err error
+
+	go func() {
+		_, _, err = p.pipeline(job.From, job.To, job.Amount, job.Reference)
+		close(done)
+	}()
+
+	select {
+	case <-ctx.Done():
+		return fmt.Errorf("job timed out or cancelled: %w", ctx.Err())
+	case <-done:
+		return err
+	}
 }

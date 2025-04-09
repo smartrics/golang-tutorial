@@ -3,6 +3,7 @@ package async_test
 import (
 	"context"
 	"fmt"
+	"strings"
 	"sync"
 	"testing"
 	"time"
@@ -191,5 +192,49 @@ func TestProcessor_StopShutsDownWorkers(t *testing.T) {
 	defer mu.Unlock()
 	if len(executed) != 2 {
 		t.Errorf("expected 2 jobs executed before stop, got %d", len(executed))
+	}
+}
+
+func TestProcessor_RespectsJobTimeout(t *testing.T) {
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	// Slow transfer: simulates delay > timeout
+	slowTransfer := func(from, to bank.BankAccount, amount float64, ref string) (bank.BankAccount, bank.BankAccount, error) {
+		time.Sleep(200 * time.Millisecond)
+		return from, to, nil
+	}
+
+	proc := async.NewProcessor(slowTransfer, 1)
+	_ = proc.Start(ctx)
+
+	from := bank.NewBankAccount("A", 100)
+	to := bank.NewBankAccount("B", 100)
+
+	// Short timeout
+	jobCtx, cancelJob := context.WithTimeout(context.Background(), 100*time.Millisecond)
+	defer cancelJob()
+
+	done := make(chan error, 1)
+	job := async.TransferJob{
+		From:      from,
+		To:        to,
+		Amount:    10,
+		Reference: "timeout-test",
+		Done:      done,
+		Ctx:       jobCtx,
+	}
+
+	if err := proc.Submit(job); err != nil {
+		t.Fatalf("submit failed: %v", err)
+	}
+
+	select {
+	case err := <-done:
+		if err == nil || !strings.Contains(err.Error(), "timed out") {
+			t.Errorf("expected timeout error, got: %v", err)
+		}
+	case <-time.After(500 * time.Millisecond):
+		t.Fatal("job did not complete in time")
 	}
 }
