@@ -31,6 +31,8 @@ type asyncProcessor struct {
 	workers  int
 	jobs     chan TransferJob
 	wg       sync.WaitGroup
+	stopOnce sync.Once
+	stopCh   chan struct{}
 }
 
 func NewProcessor(pipeline bank.TransferFunc, workers int) Processor {
@@ -38,6 +40,7 @@ func NewProcessor(pipeline bank.TransferFunc, workers int) Processor {
 		pipeline: pipeline,
 		workers:  workers,
 		jobs:     make(chan TransferJob, 100), // buffer can be tuned
+		stopCh:   make(chan struct{}),
 	}
 }
 
@@ -49,6 +52,8 @@ func (p *asyncProcessor) Start(ctx context.Context) error {
 			for {
 				select {
 				case <-ctx.Done():
+					return
+				case <-p.stopCh:
 					return
 				case job := <-p.jobs:
 					err := p.process(job)
@@ -63,16 +68,26 @@ func (p *asyncProcessor) Start(ctx context.Context) error {
 }
 
 func (p *asyncProcessor) Stop() error {
+	p.stopOnce.Do(func() {
+		close(p.stopCh)
+		p.wg.Wait()
+	})
 	return nil
 }
 
 func (p *asyncProcessor) Submit(job TransferJob) error {
 	select {
-	case p.jobs <- job:
-		return nil
+	case <-p.stopCh:
+		return fmt.Errorf("processor stopped")
 	default:
-		return fmt.Errorf("job queue full")
+		select {
+		case p.jobs <- job:
+			return nil
+		default:
+			return fmt.Errorf("job queue full")
+		}
 	}
+
 }
 
 func (p *asyncProcessor) process(job TransferJob) error {
