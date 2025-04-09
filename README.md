@@ -1,16 +1,61 @@
-# GOLANG tutorial
+# GOLANG Tutorial
 
-This is a tutorial entirely designed by ChatGPT. Each part builds on top of the previous. 
-Each branch contains the code for the current part.
+This is a step-by-step tutorial entirely designed and guided by ChatGPT.  
+It walks through the design and implementation of a banking system in Go, with each part building incrementally on top of the previous one.
 
-Understand the goal and requirements, then build the code. 
+It is designed to guide mid-to-senior engineers through building a real-world backend system from scratch — a banking platform — using idiomatic Go, clean architecture principles, and test-driven development.
 
-## Setup
+## 🎯 Purpose
+To help experienced Go developers refresh their knowledge through practical, progressive exercises — with a focus on writing production-quality code, structuring real-world projects, and revisiting concurrency, interfaces, and clean design.
+
+## 🎯 What You'll Build
+
+  * Core banking logic (accounts, transfers)
+  * Clean interfaces and structs
+  * Transfer pipelines with decorators and mixins
+  * An async job processor (fan-in/fan-out, concurrency patterns)
+  * A testable, composable transfer engine
+  * A full HTTP API (routes, JSON I/O, handlers)
+  * End-to-end integration tests
+  * Monitoring/debug endpoints for observability
+
+Each **part is implemented in a dedicated branch** named `partX` (e.g. `part1`, `part2`, ... `part8`).
+
+---
+
+## 🔁 Tutorial Structure
+
+| Part | Branch   | Focus                                         |
+|------|----------|-----------------------------------------------|
+| 1    | [part1](https://github.com/smartrics/golang-tutorial/tree/part1) | Structs, interfaces, basic testing |
+| 2    | [part2](https://github.com/smartrics/golang-tutorial/tree/part2) | Table-driven tests, test coverage |
+| 3    | [part3](https://github.com/smartrics/golang-tutorial/tree/part3) | Mocking, interfaces, error handling |
+| 4    | [part4](https://github.com/smartrics/golang-tutorial/tree/part4) | Functional pipelines, decorators |
+| 5    | [part5](https://github.com/smartrics/golang-tutorial/tree/part5) | Transfer engine + integration tests |
+| 6    | [part6](https://github.com/smartrics/golang-tutorial/tree/part6) | Async processor with concurrency |
+| 7    | [part7](https://github.com/smartrics/golang-tutorial/tree/part7) | Transfer engine + processor coordination |
+| 8    | [part8](https://github.com/smartrics/golang-tutorial/tree/part8) | HTTP server, monitoring, E2E testing |
+
+> 💡 You can check out any part using `git checkout partX`.
+
+---
+
+## 🚀 Getting Started
+
+Clone the repo and initialise your Go module:
 
 ```bash
-mkdir golang-tutorial && cd golang-tutorial
-go mod init github.com/smartrics/golang-tutorial
+git clone https://github.com/smartrics/golang-tutorial.git
+cd golang-tutorial
+git checkout part1   # or any part you want to start from
+
+go mod tidy
 ```
 
-*Note*: Use your own module name for the project.
+*Note: Use your own module path if you're adapting the tutorial.*
 
+## 🧱 Build Philosophy
+  * Test-first (TDD) development
+  * Realistic banking domain use case
+  * Clean architecture + Hexagonal layering
+  * Async processing, observability, and end-to-end testing
