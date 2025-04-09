@@ -369,5 +369,5 @@ You may introduce:
 internal/bank/
 ├── async/
 │   ├── processor.go       # concurrent transfer processor
-│   └── worker_pool.go     # fan-out worker pool implementation
+│   └── ...
 ```
