@@ -16,6 +16,11 @@ const (
 	contextKeyJobID     = contextKey("jobID")
 )
 
+type BankServicePort interface {
+	Transfer(from, to bank.BankAccount, amount float64, ref string) (bank.BankAccount, bank.BankAccount, error)
+	GetStatement(bank.BankAccount) ([]bank.Transaction, error)
+}
+
 type TransferEngine interface {
 	SubmitTransfer(fromID, toID string, amount float64, reference string) error
 	GetStatement(accountID string) ([]bank.Transaction, error)
@@ -25,12 +30,12 @@ type TransferEngine interface {
 type transferEngine struct {
 	registry  AccountRegistry
 	processor async.Processor
-	bankSvc   bank.BankService
+	bankSvc   BankServicePort
 	onDone    func(job async.TransferJob, err error)
 }
 
 // New creates a new TransferEngine instance with the given registry and processor.
-func NewEngine(reg AccountRegistry, proc async.Processor, svc bank.BankService) TransferEngine {
+func NewEngine(reg AccountRegistry, proc async.Processor, svc BankServicePort) TransferEngine {
 	return &transferEngine{
 		registry:  reg,
 		bankSvc:   svc,

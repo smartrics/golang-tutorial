@@ -4,6 +4,7 @@ import (
 	"sync"
 
 	"github.com/smartrics/golang-tutorial/internal/bank"
+	"github.com/smartrics/golang-tutorial/internal/ports"
 )
 
 // ConcurrentBankService wraps a bank.BankService to provide thread-safe access
@@ -12,6 +13,8 @@ type ConcurrentBankService struct {
 	inner bank.BankService
 	mu    sync.Mutex
 }
+
+var _ ports.BankServicePort = (*ConcurrentBankService)(nil)
 
 // NewConcurrentBankService returns a thread-safe wrapper around a new bankService.
 func NewConcurrentBankService() *ConcurrentBankService {

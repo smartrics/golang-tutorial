@@ -380,22 +380,21 @@ internal/bank/
 
 ### ✅ Requirements
 
-1. Design an API-friendly Interface
-    * Think of an external caller that wants to:
-    * Submit a transfer
-    * Get account statements
-    * Possibly subscribe to events or results
-    * Design the TransferEngine interface that wraps your processor like:
-        ```go
-        type TransferEngine interface {
-          SubmitTransfer(fromID, toID string, amount float64, ref string) error
-          GetStatement(accountID string) ([]bank.Transaction, error)
-        }
-        ```
-      to:
-        * Encapsulates your internal types
-        * Easy to expose via HTTP or CLI
-        * Hides processor and account structs behind strings
+1. Design an API-friendly Interface. Think of an external caller that wants to:
+  * Submit a transfer
+  * Get account statements
+  * Possibly subscribe to events or results
+  * Design the TransferEngine interface that wraps your processor like:
+      ```go
+      type TransferEngine interface {
+        SubmitTransfer(fromID, toID string, amount float64, ref string) error
+        GetStatement(accountID string) ([]bank.Transaction, error)
+      }
+      ```
+    to:
+      * Encapsulates your internal types
+      * Easy to expose via HTTP or CLI
+      * Hides processor and account structs behind strings
 
 2. Account Registry
     * Map from accountID string → BankAccount object
@@ -422,3 +421,30 @@ internal/bank/
 | 2 |API layer|Avoid leaking internal types like BankAccount|
 | 3 |Tests|Don't forget to test error paths (missing account, bad amount)|
 | 4 |Concurrency|Account registry access must be thread-safe if shared|
+
+### Clean approach to architecture
+
+At this stage, the project follows the Hexagonal Architecture to ensure clear separation of concerns, testability and maintainability.
+
+#### Principles
+
+  * Core logic is independent of frameworks, databases, or transport layers
+  * Dependencies point inward: outer layers depend on interfaces defined in inner layers
+  * Adapters implement interfaces — not the other way around
+  * Easy to test and replace parts in isolation
+
+#### Layer Overview
+
+|Layer|Description|Example Packages
+| --- | --- | ---
+|Core|Defines domain interfaces (ports), orchestrators, and business rules|`internal/engine`, `internal/ports`
+|Adapters|Implement core interfaces using concrete logic (banking, async processing)|`internal/bank`, `internal/async`
+|Drivers|Expose the system externally (e.g. CLI, HTTP)|cmd/api, cmd/cli 
+
+#### Example Flow: Transfer Execution
+
+1. `TransferEngine.SubmitTransfer(...)` is called (API-friendly interface)
+2. It resolves from and to accounts via a `Registry` (core port)
+3. It delegates the transfer to an `async.Processor` (adapter)
+4. The `Processor` executes a decorated `TransferFunc` (core logic)
+5. Results can be observed via a callback or queried via `GetStatement(...)`
