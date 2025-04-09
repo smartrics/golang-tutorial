@@ -17,7 +17,7 @@ func TestProcessorExecutesTransferJob(t *testing.T) {
 	defer cancel()
 
 	// Setup fake service with audit to capture execution
-	service := bank.NewBankService()
+	service := async.NewConcurrentBankService()
 	var audit []bank.AuditEntry
 	auditFn := func(e bank.AuditEntry) {
 		audit = append(audit, e)
@@ -74,7 +74,7 @@ func TestProcessor_ConcurrentJobs(t *testing.T) {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
-	service := bank.NewBankService()
+	service := async.NewConcurrentBankService()
 	var audit []bank.AuditEntry
 	auditFn := func(e bank.AuditEntry) {
 		audit = append(audit, e)
