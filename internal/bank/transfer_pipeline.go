@@ -44,8 +44,16 @@ func WithValidation(next TransferFunc) TransferFunc {
 
 func WithLogging(next TransferFunc) TransferFunc {
 	return func(from, to BankAccount, amount float64, reference string) (BankAccount, BankAccount, error) {
+		var fromID, toID string
+		if from != nil {
+			fromID = string(from.ID())
+		}
+		if to != nil {
+			toID = string(to.ID())
+		}
+
 		start := time.Now()
-		log.Printf("[TRANSFER] Initiating from: `%s`, to: `%s`, amount: `%.2f`, ref=`%s`", from.ID(), to.ID(), amount, reference)
+		log.Printf("[TRANSFER] Initiating from: `%s`, to: `%s`, amount: `%.2f`, ref=`%s`", fromID, toID, amount, reference)
 		newFrom, newTo, err := next(from, to, amount, reference)
 		if err != nil {
 			log.Printf("[TRANSFER] FAILED after %s: %v", time.Since(start), err)
