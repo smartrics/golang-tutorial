@@ -296,3 +296,78 @@ CI/CD Readiness:
  * Decorators for logging, validation, and error wrapping
  * A composable Transfer pipeline (like functional middleware)
  * A clearly isolated, testable, modular service design
+
+ ## Part 6: Concurrency, Channels and Project Architecture
+
+### 🎯 Goal
+
+Understand and correctly implement all core concurrency patterns in Go:
+ * Goroutines
+ * Channels (buffered/unbuffered)
+ * `select` statements
+ * Worker pools
+ * Cancellation using `context`
+ * Fan-out / fan-in patterns
+
+Apply these patterns to banking-relevant scenarios, such as:
+ * Parallel transaction processing
+ * Concurrent balance aggregation
+ * Timed or cancellable transfer operations
+
+Establish a resilient and maintainable application architecture, with:
+ * Separation of orchestration vs business logic
+ * Lifecycle-safe goroutine management
+ * Support for observability and graceful shutdown
+
+### 📋 Requirements
+ 1. Concurrency Fundamentals
+ 
+    * Use goroutines to execute transfer operations concurrently
+    * Use channels to coordinate:
+      * Event dispatch
+      * Result aggregation
+      * Backpressure and throttling
+    * Use `context.Context` for timeout and cancellation propagation
+
+ 2. Concurrency Patterns
+ 
+    * Implement and test:
+      * Fan-out: Splitting a stream of tasks to N workers
+      * Fan-in: Aggregating results from multiple sources
+      * Bounded worker pool: Processing a channel of transfer requests with limited workers
+      * Timeout pattern: Enforcing time limits per transfer using context.WithTimeout
+
+ 3. Application Architecture
+    * Extract transfer processing into a dedicated goroutine-managed service
+    * Establish lifecycle hooks for starting/stopping workers
+    * Ensure thread-safety in shared state (transaction history, audit log, etc.)
+    * Make unit tests deterministic using channels and contexts
+
+### ⚠️ Common Gotchas
+|Problem|Cause|Mitigation
+|---|---|---|
+|Goroutine leaks|Forgetting to exit on cancel/timeout|Always check `<-ctx.Done()`|
+|Data races|Shared mutable state|Use immutability or mutexes when sharing|
+|Channel deadlocks|Incorrect send/receive balance|Use buffered channels or fan-out with care|
+|Non-deterministic tests|Async timing issues|Use `sync.WaitGroup`, channels, or mocks to control flow|
+|Overusing goroutines|Thinking each task needs one|Prefer pooled execution for I/O-bound work|
+
+### 🧰 Tools & Concepts
+|Concept|Usage|
+|---|---|
+|`go func()`|Launch lightweight concurrent unit|
+|`chan T`|Synchronised communication between routines|
+|`context.Context`|Deadline, cancellation, and propagation|
+|`sync.WaitGroup`|Deterministic test orchestration|
+|`select`|Multiplex multiple channel operations|
+|`time.After`, `time.Ticker`|Timers and periodic scheduling|
+
+### 📁 Directory Suggestions for This Phase
+You may introduce:
+
+```bash
+internal/bank/
+├── async/
+│   ├── processor.go       # concurrent transfer processor
+│   └── worker_pool.go     # fan-out worker pool implementation
+```
