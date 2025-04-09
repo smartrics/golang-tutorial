@@ -1,6 +1,8 @@
 package bank
 
-import "fmt"
+import (
+	"fmt"
+)
 
 var (
 	ErrInvalidAccount         = fmt.Errorf("invalid account")
