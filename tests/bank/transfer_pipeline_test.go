@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"fmt"
 	"log"
+	"os"
 	"strings"
 	"testing"
 	"time"
@@ -117,6 +118,10 @@ func TestWithLoggingSuccess(t *testing.T) {
 }
 
 func TestTransferFunc_PipelineExecution_Success(t *testing.T) {
+	var buf bytes.Buffer
+	log.SetOutput(&buf)
+	defer log.SetOutput(os.Stderr) // always restore the default!
+
 	service := bank.NewBankService()
 
 	var audit []bank.AuditEntry
