@@ -33,7 +33,7 @@ Each **part is implemented in a dedicated branch** named `partX` (e.g. `part1`, 
 | 5    | [part5](https://github.com/smartrics/golang-tutorial/tree/part5) | Functional Composition, OO Patterns, and Advanced Struct Techniques |
 | 6    | [part6](https://github.com/smartrics/golang-tutorial/tree/part6) | Concurrency, Channels and Project Architecture |
 | 7    | [part7](https://github.com/smartrics/golang-tutorial/tree/part7) | Interface Composition, APIs, and I/O Integration |
-
+| 8    | [part8](https://github.com/smartrics/golang-tutorial/tree/part8) | Common Golang gotchas |
 
 > 💡 You can check out any part using `git checkout partX`.
 
