@@ -7,6 +7,10 @@ It is designed to guide mid-to-senior engineers through building a real-world ba
 
 The purpose is to help experienced Go developers refresh their knowledge through practical, progressive exercises — with a focus on writing production-quality code, structuring real-world projects, and revisiting concurrency, interfaces, and clean design.
 
+## 📚 Table of Contents
+
+ * [Part 1: Syntax & Language Fundamentals](#part-1-syntax--language-fundamentals)
+
 ## 🎯 What You'll Build
 
   * Core banking logic (accounts, transfers)
