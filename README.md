@@ -7,6 +7,16 @@ It is designed to guide mid-to-senior engineers through building a real-world ba
 
 The purpose is to help experienced Go developers refresh their knowledge through practical, progressive exercises — with a focus on writing production-quality code, structuring real-world projects, and revisiting concurrency, interfaces, and clean design.
 
+## 📚 Table of Contents
+
+ * [Part 1: Syntax & Language Fundamentals](#part-1-syntax--language-fundamentals)
+ * [Part 2: Structs, Methods, Interfaces](#part-2-structs-methods-interfaces)
+ * [Part 3: Error Handling, Testing, Tooling](#part-3-error-handling-testing-tooling)
+ * [Part 4: Application Structure, Project Organisation, and CI/CD Readiness](#part-4-application-structure-project-organisation-and-cicd-readiness)
+ * [Part 5: Functional Composition, OO Patterns, and Advanced Struct Techniques](#part-5-functional-composition-oo-patterns-and-advanced-struct-techniques)
+ * [Part 6: Concurrency, Channels and Project Architecture](#part-6-concurrency-channels-and-project-architecture)
+ * [Part 7: Interface Composition, APIs, and I/O Integration](#part-7-interface-composition-apis-and-io-integration)
+
 ## 🎯 What You'll Build
 
   * Core banking logic (accounts, transfers)
