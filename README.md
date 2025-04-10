@@ -33,6 +33,7 @@ Each **part is implemented in a dedicated branch** named `partX` (e.g. `part1`, 
 | 5    | [part5](https://github.com/smartrics/golang-tutorial/tree/part5) | Functional Composition, OO Patterns, and Advanced Struct Techniques |
 | 6    | [part6](https://github.com/smartrics/golang-tutorial/tree/part6) | Concurrency, Channels and Project Architecture |
 | 7    | [part7](https://github.com/smartrics/golang-tutorial/tree/part7) | Interface Composition, APIs, and I/O Integration |
+| 8    | [part8](https://github.com/smartrics/golang-tutorial/tree/part8) | Common Golang gotchas |
 
 > 💡 You can check out any part using `git checkout partX`.
 
@@ -515,3 +516,6 @@ At this stage, the project follows the Hexagonal Architecture to ensure clear se
 5. Results can be observed via a callback or queried via `GetStatement(...)`
 
 
+## Part 8: Common Golang Gotchas
+
+See [GOTCHAS.md](GOTCHAS.md) and the test file `tests/gotchas_test.go`
