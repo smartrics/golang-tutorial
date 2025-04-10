@@ -26,14 +26,14 @@ Each **part is implemented in a dedicated branch** named `partX` (e.g. `part1`, 
 
 | Part | Branch   | Focus                                         |
 |------|----------|-----------------------------------------------|
-| 1    | [part1](https://github.com/smartrics/golang-tutorial/tree/part1) | Structs, interfaces, basic testing |
-| 2    | [part2](https://github.com/smartrics/golang-tutorial/tree/part2) | Table-driven tests, test coverage |
-| 3    | [part3](https://github.com/smartrics/golang-tutorial/tree/part3) | Mocking, interfaces, error handling |
-| 4    | [part4](https://github.com/smartrics/golang-tutorial/tree/part4) | Functional pipelines, decorators |
-| 5    | [part5](https://github.com/smartrics/golang-tutorial/tree/part5) | Transfer engine + integration tests |
-| 6    | [part6](https://github.com/smartrics/golang-tutorial/tree/part6) | Async processor with concurrency |
-| 7    | [part7](https://github.com/smartrics/golang-tutorial/tree/part7) | Transfer engine + processor coordination |
-| 8    | [part8](https://github.com/smartrics/golang-tutorial/tree/part8) | HTTP server, monitoring, E2E testing |
+| 1    | [part1](https://github.com/smartrics/golang-tutorial/tree/part1) | Syntax & Language Fundamentals |
+| 2    | [part2](https://github.com/smartrics/golang-tutorial/tree/part2) | Structs, Methods, Interfaces |
+| 3    | [part3](https://github.com/smartrics/golang-tutorial/tree/part3) | Error Handling, Testing, Tooling |
+| 4    | [part4](https://github.com/smartrics/golang-tutorial/tree/part4) | Application Structure, Project Organisation, and CI/CD Readiness |
+| 5    | [part5](https://github.com/smartrics/golang-tutorial/tree/part5) | Functional Composition, OO Patterns, and Advanced Struct Techniques |
+| 6    | [part6](https://github.com/smartrics/golang-tutorial/tree/part6) | Concurrency, Channels and Project Architecture |
+| 7    | [part7](https://github.com/smartrics/golang-tutorial/tree/part7) | Interface Composition, APIs, and I/O Integration |
+
 
 > 💡 You can check out any part using `git checkout partX`.
 
