@@ -1,12 +1,11 @@
 # GOLANG Tutorial
 
-This is a step-by-step tutorial entirely designed and guided by ChatGPT.  
-It walks through the design and implementation of a banking system in Go, with each part building incrementally on top of the previous one.
+This is a step-by-step tutorial designed with the help of ChatGPT.  
+It walks through the design and implementation of a simple banking system in Go, with each part building incrementally on top of the previous one.
 
 It is designed to guide mid-to-senior engineers through building a real-world backend system from scratch — a banking platform — using idiomatic Go, clean architecture principles, and test-driven development.
 
-## 🎯 Purpose
-To help experienced Go developers refresh their knowledge through practical, progressive exercises — with a focus on writing production-quality code, structuring real-world projects, and revisiting concurrency, interfaces, and clean design.
+The purpose is to help experienced Go developers refresh their knowledge through practical, progressive exercises — with a focus on writing production-quality code, structuring real-world projects, and revisiting concurrency, interfaces, and clean design.
 
 ## 🎯 What You'll Build
 
